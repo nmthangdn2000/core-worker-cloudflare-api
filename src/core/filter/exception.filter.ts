@@ -9,7 +9,7 @@ import { HTTPException } from "hono/http-exception";
 const errorCustom = new ErrorCustom(ERROR_MESSAGES);
 
 export const exceptionFilter = (error: Error | HTTPException, c: TContext) => {
-  console.log(error);
+  console.error(error);
 
   const { errorCode, message } = errorCustom.messageCode(error);
 

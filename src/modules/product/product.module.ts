@@ -1,13 +1,14 @@
 import { Hono } from "hono";
 import { BlankSchema } from "hono/types";
 import { BaseModule } from "../../core/base/module.base";
-import { TBlankEnv } from "../../core/types/type";
 import { authorizationMiddleware } from "../../core/middlewares/authorization.middleware";
+import { validatorMiddleware } from "../../core/middlewares/validator.middleware";
+import { TBlankEnv } from "../../core/types/type";
 import { ROLE } from "../../share/constants/role.constant";
 import { ProductController } from "./product.controller";
-import { validatorMiddleware } from "../../core/middlewares/validator.middleware";
-import { productUpdateSchema } from "./schema/product-update.schema";
 import { productCreateSchema } from "./schema/product-create.schema";
+import { productFilterSchema } from "./schema/product-get.schema";
+import { productUpdateSchema } from "./schema/product-update.schema";
 
 export class ProductModule extends BaseModule {
   private readonly productController: ProductController;
@@ -20,11 +21,11 @@ export class ProductModule extends BaseModule {
   }
 
   init() {
-    this.appModule.get("/:id", this.productController.create);
+    this.appModule.get("/:id", this.productController.getOne);
 
     this.appModule.get(
       "/",
-      validatorMiddleware(productCreateSchema),
+      validatorMiddleware(productFilterSchema, "query"),
       this.productController.getAll
     );
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { paginationSchema } from "../../../core/base/pagination.base";
-import { SORT_KEY_ORDER } from "../order";
+import { SORT_KEY_ORDER } from "../order.type";
 
 export const orderFilterSchema = paginationSchema.extend({
   userId: z.string().optional(),

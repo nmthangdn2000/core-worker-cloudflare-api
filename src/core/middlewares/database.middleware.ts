@@ -6,8 +6,6 @@ class DatabaseMiddleware {
   constructor() {}
 
   connect() {
-    console.log(getEnv("DB"));
-
     const adapter = new PrismaD1(getEnv("DB"));
     const prisma = new PrismaClient({ adapter });
 

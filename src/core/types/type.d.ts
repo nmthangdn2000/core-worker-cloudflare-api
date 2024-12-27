@@ -11,6 +11,8 @@ export type TContext = Context<TBlankEnv>;
 
 export type TKeyVariable = {
   parsedBody: any;
+  parsedQuery: any;
+  parsedParams: any;
   response: any;
   userAuth: User;
 };

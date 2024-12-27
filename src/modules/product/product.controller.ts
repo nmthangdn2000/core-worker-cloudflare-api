@@ -10,7 +10,7 @@ export class ProductController {
   }
 
   async getAll(c: TContext) {
-    const data = await productService.getAll(c.req.query() as any);
+    const data = await productService.getAll(c.get("parsedQuery"));
     return transformInterceptor(c, data);
   }
 

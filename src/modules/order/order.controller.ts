@@ -10,7 +10,7 @@ export class OrderController {
   }
 
   async getAll(c: TContext) {
-    const data = await orderService.getAll(c.req.query() as any);
+    const data = await orderService.getAll(c.get("parsedQuery"));
     return transformInterceptor(c, data);
   }
 

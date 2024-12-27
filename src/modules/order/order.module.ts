@@ -7,6 +7,7 @@ import { validatorMiddleware } from "../../core/middlewares/validator.middleware
 import { orderUpdateSchema } from "./schema/order-update.schema";
 import { orderCreateSchema } from "./schema/order-create.schema";
 import { OrderController } from "./order.controller";
+import { orderFilterSchema } from "./schema/order-get.schema";
 
 export class OrderModule extends BaseModule {
   private readonly orderController: OrderController;
@@ -22,13 +23,13 @@ export class OrderModule extends BaseModule {
     this.appModule.get(
       "/:id",
       authorizationMiddleware.use(),
-      this.orderController.create
+      this.orderController.getOne
     );
 
     this.appModule.get(
       "/",
       authorizationMiddleware.use(),
-      validatorMiddleware(orderCreateSchema),
+      validatorMiddleware(orderFilterSchema, "query"),
       this.orderController.getAll
     );
 

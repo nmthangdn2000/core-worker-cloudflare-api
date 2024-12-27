@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const paginationSchema = z.object({
-  page: z.coerce.number().optional().default(1),
-  take: z.coerce.number().optional().default(10),
+  page: z.number().optional().default(1),
+  take: z.number().optional().default(10),
   sortKey: z.string().optional(),
   sortOrder: z.enum(["asc", "desc"]).optional(),
 });

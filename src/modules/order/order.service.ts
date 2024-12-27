@@ -6,8 +6,8 @@ import { TOrderCreateSchema } from "./schema/order-create.schema";
 import { TOrderFilterSchema } from "./schema/order-get.schema";
 import { TOrderUpdateSchema } from "./schema/order-update.schema";
 import { PaginationResponse } from "../../core/base/pagination.base";
-import { ORDER_STATUS } from "./order";
 import { ROLE } from "../../share/constants/role.constant";
+import { ORDER_STATUS } from "./order.type";
 
 class OrderService {
   async getOne(id: string) {
