@@ -36,6 +36,16 @@ class AuthService {
   }
 
   async register(input: TRegisterSchema) {
+    const userExist = await prismaClient().user.findFirst({
+      where: {
+        email: input.email,
+      },
+    });
+
+    if (userExist) {
+      throw new BadRequestException(ERROR_MESSAGES.EmailAlreadyExist);
+    }
+
     const user = await prismaClient().user.create({
       data: {
         ...input,

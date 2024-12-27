@@ -1,5 +1,5 @@
 import { Next } from "hono";
-import { TContext, TKeyVariable } from "../base/type";
+import { TContext, TKeyVariable } from "../types/type";
 import { z } from "zod";
 import { ValidatorException } from "../exception/validator.eception";
 

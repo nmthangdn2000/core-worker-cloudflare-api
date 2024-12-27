@@ -1,9 +1,9 @@
 import { HTTPResponseError } from "hono/types";
-import { TContext } from "../base/type";
+import { TContext } from "../types/type";
 import { ErrorCustom } from "../base/error.base";
 import { ERROR_MESSAGES } from "../../common/error.common";
 import { StatusCode } from "hono/utils/http-status";
-import { TResponse } from "../base/response.base";
+import { TResponse } from "../types/response";
 import { HTTPException } from "hono/http-exception";
 
 const errorCustom = new ErrorCustom(ERROR_MESSAGES);

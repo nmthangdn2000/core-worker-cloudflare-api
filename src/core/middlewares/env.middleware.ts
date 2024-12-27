@@ -1,5 +1,5 @@
 import { Next } from "hono";
-import { TContext } from "../base/type";
+import { TContext } from "../types/type";
 
 class EnvMiddleware {
   private static instance: EnvMiddleware;

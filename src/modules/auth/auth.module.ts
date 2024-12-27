@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { BlankSchema } from "hono/types";
 import { BaseModule } from "../../core/base/module.base";
-import { TBlankEnv } from "../../core/base/type";
+import { TBlankEnv } from "../../core/types/type";
 import { AuthController } from "./auth.controller";
 import { validatorMiddleware } from "../../core/middlewares/validator.middleware";
 import { loginSchema } from "./schema/login.schema";

@@ -1,4 +1,4 @@
-import { TContext } from "../../core/base/type";
+import { TContext } from "../../core/types/type";
 import authService from "./auth.service";
 import { transformInterceptor } from "../../core/interceptors/transform.interceptor";
 

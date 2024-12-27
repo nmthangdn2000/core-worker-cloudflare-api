@@ -1,6 +1,6 @@
 import { Next } from "hono";
 import { ROLE } from "../../share/constants/role.constant";
-import { TContext } from "../base/type";
+import { TContext } from "../types/type";
 import { verify } from "hono/jwt";
 import { User } from "@prisma/client";
 import { ForbiddenException } from "../exception/forbidden.eception";

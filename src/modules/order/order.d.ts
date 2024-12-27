@@ -1,0 +1,11 @@
+export enum ORDER_STATUS {
+  PENDING = "PENDING",
+  CONFIRMED = "CONFIRMED",
+  SHIPPING = "SHIPPING",
+  COMPLETED = "COMPLETED",
+  CANCELED = "CANCELED",
+}
+
+export enum SORT_KEY_ORDER {
+  CREATED_AT = "createdAt",
+}

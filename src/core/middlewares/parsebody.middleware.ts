@@ -1,5 +1,5 @@
 import { Next } from "hono";
-import { TContext, TKeyVariable } from "../base/type";
+import { TContext, TKeyVariable } from "../types/type";
 
 export const parsePayload = async (c: TContext, next: Next) => {
   const contentType = c.req.header("content-type") || "";

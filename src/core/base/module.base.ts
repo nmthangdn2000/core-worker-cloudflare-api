@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { BlankSchema } from "hono/types";
-import { TBlankEnv } from "./type";
+import { TBlankEnv } from "../types/type";
 
 export class BaseModule {
   readonly app: Hono<TBlankEnv, BlankSchema, "/">;

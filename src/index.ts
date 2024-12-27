@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { MainModule } from "./modules/main.module";
-import { TBlankEnv } from "./core/base/type";
+import { TBlankEnv } from "./core/types/type";
 
 const app = new Hono<TBlankEnv>();
 

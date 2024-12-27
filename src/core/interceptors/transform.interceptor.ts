@@ -1,5 +1,5 @@
-import { TContext } from "../base/type";
-import { TResponse } from "../base/response.base";
+import { TContext } from "../types/type";
+import { TResponse } from "../types/response";
 
 export const transformInterceptor = async (c: TContext, data: any) => {
   const customBody: TResponse<any> = {
