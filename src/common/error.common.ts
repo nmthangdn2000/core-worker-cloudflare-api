@@ -19,4 +19,9 @@ export enum ERROR_MESSAGES {
   OrderNotFound = 1041,
   OrderNotAllowUpdate = 1042,
   OrderNotAllowDelete = 1043,
+
+  // 1051 - 1060: Cart
+  CartNotFound = 1051,
+  CartNotAllowUpdate = 1052,
+  CartNotAllowDelete = 1053,
 }

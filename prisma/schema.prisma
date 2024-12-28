@@ -55,7 +55,7 @@ model Product {
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
   OrderItem      OrderItem[]
-  Cart           CartItem[]
+  Cart           Cart[]
 }
 
 model ProductOnCategory {
@@ -94,18 +94,9 @@ model OrderItem {
 }
 
 model Cart {
-  id        String     @id @default(uuid())
-  userId    String
-  user      User       @relation(fields: [userId], references: [id]) // Quan hệ n-1 với bảng User
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  CartItem  CartItem[]
-}
-
-model CartItem {
   id        String   @id @default(uuid())
-  cartId    String
-  cart      Cart     @relation(fields: [cartId], references: [id]) // Quan hệ n-1 với bảng Cart
+  userId    String
+  user      User     @relation(fields: [userId], references: [id]) // Quan hệ n-1 với bảng User
   productId String
   product   Product  @relation(fields: [productId], references: [id]) // Quan hệ n-1 với bảng Product
   quantity  Int
