@@ -1,7 +1,8 @@
 import { Next } from "hono";
-import { TContext, TKeyVariable } from "../types/type";
+import { TContext } from "../types/type";
 import { z } from "zod";
 import { ValidatorException } from "../exception/validator.eception";
+import qs from "qs";
 
 type Targets = "body" | "query" | "params";
 
@@ -12,7 +13,7 @@ export const validatorMiddleware =
       targets === "body"
         ? c.get("parsedBody")
         : targets === "query"
-        ? c.req.query()
+        ? qs.parse(c.req.query())
         : c.req.param()
     );
 

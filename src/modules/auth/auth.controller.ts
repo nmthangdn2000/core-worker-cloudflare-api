@@ -1,6 +1,7 @@
 import { TContext } from "../../core/types/type";
 import authService from "./auth.service";
 import { transformInterceptor } from "../../core/interceptors/transform.interceptor";
+import { ROLE } from "../../share/constants/role.constant";
 
 export class AuthController {
   async login(c: TContext) {

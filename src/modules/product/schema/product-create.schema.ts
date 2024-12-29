@@ -12,13 +12,12 @@ export const productCreateSchema = z.object({
   name: z.string(),
   keywords: z.string(),
   description: z.string(),
-  specifications: specifications,
+  specifications: z.any().optional(),
   price: z.number(),
   discount: z.number().optional(),
   images: z.array(z.string()),
-  categoryIds: z.array(z.string()),
+  categoryIds: z.array(z.string().uuid()),
   stock: z.number(),
-  status: z.enum(["active", "inactive"]),
 });
 
 export type TProductCreateSchema = z.infer<typeof productCreateSchema>;

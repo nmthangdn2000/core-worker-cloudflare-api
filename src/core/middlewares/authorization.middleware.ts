@@ -4,6 +4,7 @@ import { TContext } from "../types/type";
 import { verify } from "hono/jwt";
 import { User } from "@prisma/client";
 import { ForbiddenException } from "../exception/forbidden.eception";
+import { prismaClient } from "./database.middleware";
 
 class AuthorizationMiddleware {
   use(...roles: ROLE[]) {
@@ -13,15 +14,21 @@ class AuthorizationMiddleware {
           c.req.header().authorization?.split("Bearer")[1].trim() || "";
         const decoded = (await verify(token, c.env.JWT_SECRET_KEY)) as User;
 
-        if (
-          roles &&
-          roles.length > 0 &&
-          !roles.includes(decoded.role as ROLE)
-        ) {
+        const user = await prismaClient().user.findUnique({
+          where: {
+            id: decoded.id,
+          },
+        });
+
+        if (!user) {
           throw new ForbiddenException();
         }
 
-        c.set("userAuth", decoded);
+        if (roles && roles.length > 0 && !roles.includes(user.role as ROLE)) {
+          throw new ForbiddenException();
+        }
+
+        c.set("userAuth", user);
         return next();
       } catch (error: any) {
         throw new ForbiddenException();

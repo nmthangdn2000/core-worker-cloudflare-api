@@ -1,5 +1,5 @@
 import { Next } from "hono";
-import { TContext, TKeyVariable } from "../types/type";
+import { TContext } from "../types/type";
 
 export const parsePayload = async (c: TContext, next: Next) => {
   const contentType = c.req.header("content-type") || "";
@@ -15,7 +15,7 @@ export const parsePayload = async (c: TContext, next: Next) => {
     return c.text("Invalid payload", 400);
   }
 
-  c.set<TKeyVariable>("parsedBody", body);
+  c.set("parsedBody", body);
 
   await next();
 };

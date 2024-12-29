@@ -6,6 +6,7 @@ import { TProductCreateSchema } from "./schema/product-create.schema";
 import { TProductFilterSchema } from "./schema/product-get.schema";
 import { TProductUpdateSchema } from "./schema/product-update.schema";
 import { PaginationResponse } from "../../core/base/pagination.base";
+import { STATUS_PRODUCT } from "./product.type";
 
 class ProductService {
   async getOne(id: string) {
@@ -13,13 +14,26 @@ class ProductService {
       where: {
         id,
       },
+      include: {
+        categories: {
+          select: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!product) {
       throw new BadRequestException(ERROR_MESSAGES.ProductNotFound);
     }
 
-    return product;
+    return this.formatProduct(product);
   }
 
   async getAll(query: TProductFilterSchema) {
@@ -73,6 +87,19 @@ class ProductService {
     const [products, totalItems] = await Promise.all([
       prismaClient().product.findMany({
         where,
+        include: {
+          categories: {
+            select: {
+              category: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
+            },
+          },
+        },
         skip: (query.page - 1) * query.take,
         take: query.take,
         orderBy,
@@ -83,7 +110,7 @@ class ProductService {
     ]);
 
     return new PaginationResponse({
-      items: products,
+      items: products.map(this.formatProduct),
       take: query.take,
       page: query.page,
       totalItems,
@@ -91,32 +118,25 @@ class ProductService {
   }
 
   async create(input: TProductCreateSchema) {
+    const { categoryIds, ...rest } = input;
+
     const product = await prismaClient().product.create({
       data: {
-        ...input,
+        ...rest,
+        status: STATUS_PRODUCT.IN_STOCK,
         specifications: JSON.stringify(input.specifications),
         images: JSON.stringify(input.images),
       },
     });
 
-    await prismaClient().product.update({
-      where: {
-        id: product.id,
-      },
-      data: {
-        categories:
-          input.categoryIds && input.categoryIds.length > 0
-            ? {
-                connect: input.categoryIds.map((categoryId) => ({
-                  categoryId_productId: {
-                    categoryId,
-                    productId: product.id,
-                  },
-                })),
-              }
-            : {},
-      },
-    });
+    if (categoryIds && categoryIds.length > 0) {
+      await prismaClient().productOnCategory.createMany({
+        data: categoryIds.map((categoryId) => ({
+          categoryId,
+          productId: product.id,
+        })),
+      });
+    }
 
     return product;
   }
@@ -181,6 +201,15 @@ class ProductService {
 
     return {
       message: "Delete product successfully",
+    };
+  }
+
+  private formatProduct(product: Prisma.ProductGetPayload<any>) {
+    return {
+      ...product,
+      specifications: JSON.parse(product.specifications),
+      images: JSON.parse(product.images),
+      categories: (product as any).categories.map((item: any) => item.category),
     };
   }
 }

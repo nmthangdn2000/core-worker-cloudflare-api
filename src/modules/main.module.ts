@@ -13,6 +13,7 @@ import { CategoryModule } from "./category/category.module";
 import { ProductModule } from "./product/product.module";
 import { OrderModule } from "./order/order.module";
 import { CartModule } from "./cart/cart.module";
+import { cors } from "hono/cors";
 
 export class MainModule extends BaseModule {
   constructor(app: Hono<TBlankEnv, BlankSchema, "/">) {
@@ -22,6 +23,11 @@ export class MainModule extends BaseModule {
   }
 
   config() {
+    this.app.use(
+      cors({
+        origin: "*",
+      })
+    );
     this.app.use(logger());
     this.app.use(parsePayload);
     this.app.use(setContext);
