@@ -27,13 +27,15 @@ CREATE TABLE "Category" (
 CREATE TABLE "Product" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "sku" TEXT,
     "keywords" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "specifications" TEXT NOT NULL,
+    "description" TEXT,
+    "specifications" TEXT,
     "price" REAL NOT NULL,
-    "discount" REAL,
+    "discount" REAL NOT NULL DEFAULT 0,
     "images" TEXT NOT NULL,
-    "stock" INTEGER NOT NULL,
+    "stock" INTEGER NOT NULL DEFAULT 0,
     "status" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
@@ -46,8 +48,8 @@ CREATE TABLE "ProductOnCategory" (
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY ("categoryId", "productId"),
-    CONSTRAINT "ProductOnCategory_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "ProductOnCategory_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "ProductOnCategory_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "ProductOnCategory_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable

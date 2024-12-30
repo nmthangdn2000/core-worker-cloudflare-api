@@ -10,6 +10,7 @@ const specifications = z.object({
 
 export const productCreateSchema = z.object({
   name: z.string(),
+  sku: z.string().nullable().optional(),
   keywords: z.string(),
   description: z.string(),
   specifications: z.any().optional(),

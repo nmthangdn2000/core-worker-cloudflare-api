@@ -43,13 +43,15 @@ model Category {
 model Product {
   id             String              @id @default(uuid())
   name           String
+  slug           String
+  sku            String?
   keywords       String
-  description    String
-  specifications String
+  description    String?
+  specifications String?
   price          Float
-  discount       Float?
+  discount       Float               @default(0)
   images         String
-  stock          Int
+  stock          Int                 @default(0)
   status         String
   categories     ProductOnCategory[]
   createdAt      DateTime            @default(now())
@@ -61,8 +63,8 @@ model Product {
 model ProductOnCategory {
   categoryId String
   productId  String
-  category   Category @relation(fields: [categoryId], references: [id])
-  product    Product  @relation(fields: [productId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
 
   @@id([categoryId, productId]) // Composite primary key

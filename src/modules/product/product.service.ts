@@ -7,12 +7,13 @@ import { TProductFilterSchema } from "./schema/product-get.schema";
 import { TProductUpdateSchema } from "./schema/product-update.schema";
 import { PaginationResponse } from "../../core/base/pagination.base";
 import { STATUS_PRODUCT } from "./product.type";
+import { stringToSlug } from "../../utils/util";
 
 class ProductService {
-  async getOne(id: string) {
-    const product = await prismaClient().product.findUnique({
+  async getOne(slug: string) {
+    const product = await prismaClient().product.findFirst({
       where: {
-        id,
+        slug,
       },
       include: {
         categories: {
@@ -123,9 +124,10 @@ class ProductService {
     const product = await prismaClient().product.create({
       data: {
         ...rest,
+        slug: stringToSlug(rest.name),
         status: STATUS_PRODUCT.IN_STOCK,
         specifications: JSON.stringify(input.specifications),
-        images: JSON.stringify(input.images),
+        images: input.images.join(","),
       },
     });
 
@@ -141,10 +143,10 @@ class ProductService {
     return product;
   }
 
-  async update(id: string, input: TProductUpdateSchema) {
-    const productExist = await prismaClient().product.findUnique({
+  async update(slug: string, input: TProductUpdateSchema) {
+    const productExist = await prismaClient().product.findFirst({
       where: {
-        id,
+        slug,
       },
     });
 
@@ -152,26 +154,25 @@ class ProductService {
       throw new BadRequestException(ERROR_MESSAGES.ProductNotFound);
     }
 
-    if (input.specifications) {
-      input.specifications = JSON.stringify(input.specifications) as any;
-    }
-
-    if (input.images) {
-      input.images = JSON.stringify(input.images) as any;
-    }
+    const { categoryIds, ...rest } = input;
 
     const product = await prismaClient().product.update({
       where: {
-        id,
+        id: productExist.id,
       },
       data: {
+        ...rest,
+        images:
+          input.images && input.images.length > 0 ? input.images.join(",") : "",
+        slug: rest.name ? stringToSlug(rest.name) : productExist.slug,
+        specifications: JSON.stringify(input.specifications || []),
         categories:
           input.categoryIds && input.categoryIds.length > 0
             ? {
                 connect: input.categoryIds.map((categoryId) => ({
                   categoryId_productId: {
                     categoryId,
-                    productId: id,
+                    productId: productExist.id,
                   },
                 })),
               }
@@ -207,8 +208,8 @@ class ProductService {
   private formatProduct(product: Prisma.ProductGetPayload<any>) {
     return {
       ...product,
-      specifications: JSON.parse(product.specifications),
-      images: JSON.parse(product.images),
+      specifications: JSON.parse(product.specifications || "[]"),
+      images: product.images.split(","),
       categories: (product as any).categories.map((item: any) => item.category),
     };
   }
