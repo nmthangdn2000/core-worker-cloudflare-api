@@ -5,6 +5,7 @@ export enum ERROR_MESSAGES {
   OldPasswordIncorrect = 1003,
   ValidationError = 1004,
   EmailAlreadyExist = 1005,
+  PermissionDenied = 1006,
 
   // 1011 - 1020: User
   UserNotFound = 1011,
