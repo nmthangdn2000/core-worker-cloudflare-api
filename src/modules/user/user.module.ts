@@ -26,6 +26,12 @@ export class UserModule extends BaseModule {
     );
 
     this.appModule.get(
+      "/:id",
+      authorizationMiddleware.use(ROLE.ADMIN),
+      this.userController.getOne
+    );
+
+    this.appModule.get(
       "/",
       authorizationMiddleware.use(ROLE.ADMIN),
       validatorMiddleware(userFilterSchema, "query"),

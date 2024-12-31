@@ -20,6 +20,26 @@ class UserService {
     return user;
   }
 
+  async getOne(id: string, user: User) {
+    if (user.role !== ROLE.ADMIN) {
+      throw new BadRequestException(ERROR_MESSAGES.PermissionDenied);
+    }
+
+    const userExist = await prismaClient().user.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!userExist) {
+      throw new BadRequestException(ERROR_MESSAGES.UserNotFound);
+    }
+
+    delete (userExist as any).password;
+
+    return userExist;
+  }
+
   async getAll(filter: TUserFilterSchema, user: User) {
     console.log(user);
 
