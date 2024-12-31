@@ -7,7 +7,10 @@ class DatabaseMiddleware {
 
   connect() {
     const adapter = new PrismaD1(getEnv("DB"));
-    const prisma = new PrismaClient({ adapter });
+    const prisma = new PrismaClient({
+      adapter,
+      log: ["query", "info", "warn", "error"],
+    });
 
     return prisma;
   }

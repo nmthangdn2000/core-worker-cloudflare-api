@@ -48,7 +48,7 @@ export class OrderModule extends BaseModule {
     );
 
     this.appModule.delete(
-      "/",
+      "/:id",
       authorizationMiddleware.use(),
       this.orderController.delete
     );

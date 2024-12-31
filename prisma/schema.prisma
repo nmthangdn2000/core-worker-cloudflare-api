@@ -73,7 +73,7 @@ model ProductOnCategory {
 model Order {
   id         String      @id @default(uuid())
   userId     String
-  user       User        @relation(fields: [userId], references: [id]) // Quan hệ n-1 với bảng User
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade) // Quan hệ n-1 với bảng User
   status     String
   total      Float
   note       String?
@@ -86,11 +86,12 @@ model Order {
 model OrderItem {
   id        String   @id @default(uuid())
   orderId   String
-  order     Order    @relation(fields: [orderId], references: [id]) // Quan hệ n-1 với bảng Order
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade) // Quan hệ n-1 với bảng Order
   productId String
-  product   Product  @relation(fields: [productId], references: [id]) // Quan hệ n-1 với bảng Product
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade) // Quan hệ n-1 với bảng Product
   quantity  Int
   price     Float
+  discount  Float?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

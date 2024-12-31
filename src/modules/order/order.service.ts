@@ -16,10 +16,26 @@ class OrderService {
         id,
       },
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+            phone: true,
+          },
+        },
         orderItems: {
           include: {
-            product: true,
+            product: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                discount: true,
+                images: true,
+              },
+            },
           },
         },
       },
@@ -66,6 +82,15 @@ class OrderService {
     const [orders, totalItems] = await Promise.all([
       prismaClient().order.findMany({
         where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+        },
         skip: (query.page - 1) * query.take,
         take: query.take,
         orderBy,
@@ -118,6 +143,7 @@ class OrderService {
             quantity: product.quantity,
             productId: product.id,
             price: products.find((p) => p.id === product.id)!.price,
+            discount: products.find((p) => p.id === product.id)!.discount,
           })),
         },
       },
