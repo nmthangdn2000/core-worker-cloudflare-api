@@ -10,6 +10,42 @@ import { STATUS_PRODUCT } from "./product.type";
 import { stringToSlug } from "../../utils/util";
 
 class ProductService {
+  async statistic() {
+    const topProducts = await prismaClient().orderItem.groupBy({
+      by: ["productId"],
+      _sum: {
+        quantity: true,
+      },
+      orderBy: {
+        _sum: {
+          quantity: "desc",
+        },
+      },
+      take: 5,
+    });
+
+    const productIds = topProducts.map((item) => item.productId);
+
+    const products = await prismaClient().product.findMany({
+      where: {
+        id: { in: productIds },
+      },
+    });
+
+    const result = topProducts.map((item) => {
+      const product = products.find((p) => p.id === item.productId);
+      return {
+        id: product!.id,
+        name: product!.name,
+        slug: product!.slug,
+        image: product!.images.split(","),
+        totalQuantity: item._sum.quantity,
+      };
+    });
+
+    return result;
+  }
+
   async getOne(slug: string) {
     const product = await prismaClient().product.findFirst({
       where: {

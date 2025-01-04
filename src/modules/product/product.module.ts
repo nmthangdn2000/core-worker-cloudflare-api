@@ -21,6 +21,8 @@ export class ProductModule extends BaseModule {
   }
 
   init() {
+    this.appModule.get("/statistic", this.productController.statistic);
+
     this.appModule.get("/:slug", this.productController.getOne);
 
     this.appModule.get(

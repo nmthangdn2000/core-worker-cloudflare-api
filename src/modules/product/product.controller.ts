@@ -3,6 +3,11 @@ import { transformInterceptor } from "../../core/interceptors/transform.intercep
 import productService from "./product.service";
 
 export class ProductController {
+  async statistic(c: TContext) {
+    const data = await productService.statistic();
+    return transformInterceptor(c, data);
+  }
+
   async getOne(c: TContext) {
     const slug = c.req.param("slug");
     const data = await productService.getOne(slug);

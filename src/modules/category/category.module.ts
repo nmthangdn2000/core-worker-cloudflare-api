@@ -20,6 +20,8 @@ export class CategoryModule extends BaseModule {
   }
 
   init() {
+    this.appModule.get("/statistic", this.categoryController.statistic);
+
     this.appModule.get("/", this.categoryController.getAll);
 
     this.appModule.post(

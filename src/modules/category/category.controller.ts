@@ -3,6 +3,11 @@ import { transformInterceptor } from "../../core/interceptors/transform.intercep
 import categoryService from "./category.service";
 
 export class CategoryController {
+  async statistic(c: TContext) {
+    const data = await categoryService.statistic();
+    return transformInterceptor(c, data);
+  }
+
   async getAll(c: TContext) {
     const data = await categoryService.getAll();
     return transformInterceptor(c, data);

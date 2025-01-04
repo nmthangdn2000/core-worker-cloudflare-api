@@ -20,6 +20,8 @@ export class OrderModule extends BaseModule {
   }
 
   init() {
+    this.appModule.get("/statistic", this.orderController.statistic);
+
     this.appModule.get(
       "/:id",
       authorizationMiddleware.use(),
