@@ -20,6 +20,8 @@ export class OrderModule extends BaseModule {
   }
 
   init() {
+    this.appModule.get("/statistic", this.orderController.statistic);
+
     this.appModule.get(
       "/:id",
       authorizationMiddleware.use(),
@@ -48,7 +50,7 @@ export class OrderModule extends BaseModule {
     );
 
     this.appModule.delete(
-      "/",
+      "/:id",
       authorizationMiddleware.use(),
       this.orderController.delete
     );

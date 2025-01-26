@@ -6,12 +6,63 @@ import { TProductCreateSchema } from "./schema/product-create.schema";
 import { TProductFilterSchema } from "./schema/product-get.schema";
 import { TProductUpdateSchema } from "./schema/product-update.schema";
 import { PaginationResponse } from "../../core/base/pagination.base";
+import { STATUS_PRODUCT } from "./product.type";
+import { stringToSlug } from "../../utils/util";
 
 class ProductService {
-  async getOne(id: string) {
-    const product = await prismaClient().product.findUnique({
+  async statistic() {
+    const topProducts = await prismaClient().orderItem.groupBy({
+      by: ["productId"],
+      _sum: {
+        quantity: true,
+      },
+      orderBy: {
+        _sum: {
+          quantity: "desc",
+        },
+      },
+      take: 5,
+    });
+
+    const productIds = topProducts.map((item) => item.productId);
+
+    const products = await prismaClient().product.findMany({
       where: {
-        id,
+        id: { in: productIds },
+      },
+    });
+
+    const result = topProducts.map((item) => {
+      const product = products.find((p) => p.id === item.productId);
+      return {
+        id: product!.id,
+        name: product!.name,
+        slug: product!.slug,
+        image: product!.images.split(","),
+        totalQuantity: item._sum.quantity,
+      };
+    });
+
+    return result;
+  }
+
+  async getOne(slug: string) {
+    const product = await prismaClient().product.findFirst({
+      where: {
+        slug,
+      },
+      include: {
+        categories: {
+          select: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -19,7 +70,7 @@ class ProductService {
       throw new BadRequestException(ERROR_MESSAGES.ProductNotFound);
     }
 
-    return product;
+    return this.formatProduct(product);
   }
 
   async getAll(query: TProductFilterSchema) {
@@ -73,6 +124,19 @@ class ProductService {
     const [products, totalItems] = await Promise.all([
       prismaClient().product.findMany({
         where,
+        include: {
+          categories: {
+            select: {
+              category: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
+            },
+          },
+        },
         skip: (query.page - 1) * query.take,
         take: query.take,
         orderBy,
@@ -83,7 +147,7 @@ class ProductService {
     ]);
 
     return new PaginationResponse({
-      items: products,
+      items: products.map(this.formatProduct),
       take: query.take,
       page: query.page,
       totalItems,
@@ -91,40 +155,34 @@ class ProductService {
   }
 
   async create(input: TProductCreateSchema) {
+    const { categoryIds, ...rest } = input;
+
     const product = await prismaClient().product.create({
       data: {
-        ...input,
+        ...rest,
+        slug: stringToSlug(rest.name),
+        status: STATUS_PRODUCT.IN_STOCK,
         specifications: JSON.stringify(input.specifications),
-        images: JSON.stringify(input.images),
+        images: input.images.join(","),
       },
     });
 
-    await prismaClient().product.update({
-      where: {
-        id: product.id,
-      },
-      data: {
-        categories:
-          input.categoryIds && input.categoryIds.length > 0
-            ? {
-                connect: input.categoryIds.map((categoryId) => ({
-                  categoryId_productId: {
-                    categoryId,
-                    productId: product.id,
-                  },
-                })),
-              }
-            : {},
-      },
-    });
+    if (categoryIds && categoryIds.length > 0) {
+      await prismaClient().productOnCategory.createMany({
+        data: categoryIds.map((categoryId) => ({
+          categoryId,
+          productId: product.id,
+        })),
+      });
+    }
 
     return product;
   }
 
-  async update(id: string, input: TProductUpdateSchema) {
-    const productExist = await prismaClient().product.findUnique({
+  async update(slug: string, input: TProductUpdateSchema) {
+    const productExist = await prismaClient().product.findFirst({
       where: {
-        id,
+        slug,
       },
     });
 
@@ -132,26 +190,25 @@ class ProductService {
       throw new BadRequestException(ERROR_MESSAGES.ProductNotFound);
     }
 
-    if (input.specifications) {
-      input.specifications = JSON.stringify(input.specifications) as any;
-    }
-
-    if (input.images) {
-      input.images = JSON.stringify(input.images) as any;
-    }
+    const { categoryIds, ...rest } = input;
 
     const product = await prismaClient().product.update({
       where: {
-        id,
+        id: productExist.id,
       },
       data: {
+        ...rest,
+        images:
+          input.images && input.images.length > 0 ? input.images.join(",") : "",
+        slug: rest.name ? stringToSlug(rest.name) : productExist.slug,
+        specifications: JSON.stringify(input.specifications || []),
         categories:
           input.categoryIds && input.categoryIds.length > 0
             ? {
                 connect: input.categoryIds.map((categoryId) => ({
                   categoryId_productId: {
                     categoryId,
-                    productId: id,
+                    productId: productExist.id,
                   },
                 })),
               }
@@ -181,6 +238,15 @@ class ProductService {
 
     return {
       message: "Delete product successfully",
+    };
+  }
+
+  private formatProduct(product: Prisma.ProductGetPayload<any>) {
+    return {
+      ...product,
+      specifications: JSON.parse(product.specifications || "[]"),
+      images: product.images.split(","),
+      categories: (product as any).categories.map((item: any) => item.category),
     };
   }
 }

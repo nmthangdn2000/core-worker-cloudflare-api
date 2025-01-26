@@ -21,7 +21,9 @@ export class ProductModule extends BaseModule {
   }
 
   init() {
-    this.appModule.get("/:id", this.productController.getOne);
+    this.appModule.get("/statistic", this.productController.statistic);
+
+    this.appModule.get("/:slug", this.productController.getOne);
 
     this.appModule.get(
       "/",
@@ -37,14 +39,14 @@ export class ProductModule extends BaseModule {
     );
 
     this.appModule.patch(
-      "/",
+      "/:slug",
       authorizationMiddleware.use(ROLE.ADMIN),
       validatorMiddleware(productUpdateSchema),
       this.productController.update
     );
 
     this.appModule.delete(
-      "/",
+      "/:id",
       authorizationMiddleware.use(ROLE.ADMIN),
       this.productController.delete
     );

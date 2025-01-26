@@ -47,7 +47,7 @@ JWT_REFRESH_EXPIRES_IN = 8640000000
 [[d1_databases]]
 binding = "DB"
 database_name = "ecommerce"
-database_id = "d02a812c-21fd-41df-bee3-26ffbfb5bd49"
+database_id = "91c12132-65bb-4916-9aa0-c717406e6431"
 
 # Bind a dispatch namespace. Use Workers for Platforms to deploy serverless functions programmatically on behalf of your customers.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#dispatch-namespace-bindings-workers-for-platforms

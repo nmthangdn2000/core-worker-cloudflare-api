@@ -4,6 +4,9 @@ import { BaseModule } from "../../core/base/module.base";
 import { TBlankEnv } from "../../core/types/type";
 import { UserController } from "./user.controller";
 import { authorizationMiddleware } from "../../core/middlewares/authorization.middleware";
+import { ROLE } from "../../share/constants/role.constant";
+import { validatorMiddleware } from "../../core/middlewares/validator.middleware";
+import { userFilterSchema } from "./schema/user-get.schema";
 
 export class UserModule extends BaseModule {
   private readonly userController: UserController;
@@ -20,6 +23,19 @@ export class UserModule extends BaseModule {
       "/me",
       authorizationMiddleware.use(),
       this.userController.me
+    );
+
+    this.appModule.get(
+      "/:id",
+      authorizationMiddleware.use(ROLE.ADMIN),
+      this.userController.getOne
+    );
+
+    this.appModule.get(
+      "/",
+      authorizationMiddleware.use(ROLE.ADMIN),
+      validatorMiddleware(userFilterSchema, "query"),
+      this.userController.getAll
     );
 
     this.appModule.patch(

@@ -3,9 +3,14 @@ import { transformInterceptor } from "../../core/interceptors/transform.intercep
 import productService from "./product.service";
 
 export class ProductController {
+  async statistic(c: TContext) {
+    const data = await productService.statistic();
+    return transformInterceptor(c, data);
+  }
+
   async getOne(c: TContext) {
-    const id = c.req.param("id");
-    const data = await productService.getOne(id);
+    const slug = c.req.param("slug");
+    const data = await productService.getOne(slug);
     return transformInterceptor(c, data);
   }
 
@@ -22,10 +27,10 @@ export class ProductController {
   }
 
   async update(c: TContext) {
-    const id = c.req.param("id");
+    const slug = c.req.param("slug");
     const input = c.get("parsedBody");
 
-    const data = await productService.update(id, input);
+    const data = await productService.update(slug, input);
     return transformInterceptor(c, data);
   }
 

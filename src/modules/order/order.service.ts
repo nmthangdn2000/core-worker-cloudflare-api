@@ -10,16 +10,103 @@ import { ROLE } from "../../share/constants/role.constant";
 import { ORDER_STATUS } from "./order.type";
 
 class OrderService {
+  async statistic() {
+    const [todayRevenue, monthRevenue] = await Promise.all([
+      prismaClient().order.aggregate({
+        _sum: {
+          total: true,
+        },
+        _count: {
+          id: true,
+        },
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0)),
+            lte: new Date(new Date().setHours(23, 59, 59, 999)),
+          },
+        },
+      }),
+      prismaClient().order.aggregate({
+        _sum: {
+          total: true,
+        },
+        _count: {
+          id: true,
+        },
+        where: {
+          createdAt: {
+            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+            lte: new Date(
+              new Date().getFullYear(),
+              new Date().getMonth() + 1,
+              0
+            ),
+          },
+        },
+      }),
+    ]);
+
+    const dailyRevenueAndOrders = await prismaClient().order.groupBy({
+      by: ["createdAt"],
+      where: {
+        createdAt: {
+          gte: new Date(new Date().getTime() - 12 * 24 * 60 * 60 * 1000),
+        },
+      },
+      _sum: {
+        total: true,
+      },
+      _count: {
+        id: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    return {
+      todayRevenue: {
+        total: todayRevenue._sum.total || 0,
+        totalOrders: todayRevenue._count.id || 0,
+      },
+      monthRevenue: {
+        total: monthRevenue._sum.total || 0,
+        totalOrders: monthRevenue._count.id || 0,
+      },
+      salesReport: dailyRevenueAndOrders.map((item) => ({
+        date: item.createdAt,
+        total: item._sum.total,
+        totalOrders: item._count.id,
+      })),
+    };
+  }
+
   async getOne(id: string) {
     const order = await prismaClient().order.findUnique({
       where: {
         id,
       },
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+            phone: true,
+          },
+        },
         orderItems: {
           include: {
-            product: true,
+            product: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                discount: true,
+                images: true,
+              },
+            },
           },
         },
       },
@@ -66,6 +153,15 @@ class OrderService {
     const [orders, totalItems] = await Promise.all([
       prismaClient().order.findMany({
         where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+        },
         skip: (query.page - 1) * query.take,
         take: query.take,
         orderBy,
@@ -118,6 +214,7 @@ class OrderService {
             quantity: product.quantity,
             productId: product.id,
             price: products.find((p) => p.id === product.id)!.price,
+            discount: products.find((p) => p.id === product.id)!.discount,
           })),
         },
       },

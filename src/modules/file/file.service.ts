@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Prisma } from "@prisma/client";
 import { prismaClient } from "../../core/middlewares/database.middleware";
 import { TFileCreateSchema } from "./schema/file-create.schema";
@@ -37,6 +38,25 @@ class FileService {
 
     return files;
   }
+=======
+import { TUserUpdateSchema } from "./schema/file-update.schema";
+
+class FileService {
+  async upload(files: File[]) {
+    const buffers = await Promise.all(
+      files.map((file) => {
+        return {
+          name: file.name,
+          buffer: file.arrayBuffer(),
+        };
+      })
+    );
+
+    console.log(buffers);
+  }
+
+  async delete(id: string, input: TUserUpdateSchema) {}
+>>>>>>> 4c4fbbb9841da73830f11b3d37880285ac426c4f
 }
 
 export default new FileService();

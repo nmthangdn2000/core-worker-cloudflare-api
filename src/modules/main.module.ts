@@ -13,6 +13,7 @@ import { CategoryModule } from "./category/category.module";
 import { ProductModule } from "./product/product.module";
 import { OrderModule } from "./order/order.module";
 import { CartModule } from "./cart/cart.module";
+import { cors } from "hono/cors";
 import { FileModule } from "./file/file.module";
 
 export class MainModule extends BaseModule {
@@ -23,6 +24,11 @@ export class MainModule extends BaseModule {
   }
 
   config() {
+    this.app.use(
+      cors({
+        origin: "*",
+      })
+    );
     this.app.use(logger());
     this.app.use(parsePayload);
     this.app.use(setContext);
@@ -37,7 +43,6 @@ export class MainModule extends BaseModule {
       return c.json(response, 404);
     });
   }
-
   modules() {
     // Add your modules here
     new AuthModule(this.app).addRoute();

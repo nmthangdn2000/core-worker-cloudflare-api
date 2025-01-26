@@ -12,6 +12,25 @@ class CategoryService {
     return categories;
   }
 
+  async statistic() {
+    const categories = await prismaClient().category.findMany({
+      include: {
+        _count: {
+          select: {
+            products: true,
+          },
+        },
+      },
+    });
+
+    return categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      totalProducts: category._count.products,
+    }));
+  }
+
   async create(input: TCategoryCreateSchema) {
     const category = await prismaClient().category.create({
       data: {

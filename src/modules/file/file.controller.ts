@@ -3,18 +3,20 @@ import fileService from "./file.service";
 import { transformInterceptor } from "../../core/interceptors/transform.interceptor";
 
 export class FileController {
-  async create(c: TContext) {
-    const userAuth = c.get("userAuth");
-    const input = c.get("parsedBody");
+  async upload(c: TContext) {
+    const files = (await c.req.parseBody({ all: true }))[
+      "files"
+    ] as any as File[];
 
-    const data = await fileService.create(input, userAuth.id);
+    const data = await fileService.upload(files);
     return transformInterceptor(c, data);
   }
 
-  async getAll(c: TContext) {
-    const filter = c.get("parsedQuery");
+  async delete(c: TContext) {
+    const userAuth = c.get("userAuth");
+    const input = c.get("parsedBody");
 
-    const data = await fileService.getAll(filter);
+    const data = await fileService.delete(userAuth.id, input);
     return transformInterceptor(c, data);
   }
 }

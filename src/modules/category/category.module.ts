@@ -13,18 +13,16 @@ export class CategoryModule extends BaseModule {
   private readonly categoryController: CategoryController;
 
   constructor(app: Hono<TBlankEnv, BlankSchema, "/">) {
-    super(app, "user");
+    super(app, "category");
 
     this.categoryController = new CategoryController();
     this.init();
   }
 
   init() {
-    this.appModule.get(
-      "/",
-      authorizationMiddleware.use(),
-      this.categoryController.getAll
-    );
+    this.appModule.get("/statistic", this.categoryController.statistic);
+
+    this.appModule.get("/", this.categoryController.getAll);
 
     this.appModule.post(
       "/",
@@ -34,14 +32,14 @@ export class CategoryModule extends BaseModule {
     );
 
     this.appModule.patch(
-      "/",
+      "/:id",
       authorizationMiddleware.use(ROLE.ADMIN),
       validatorMiddleware(categoryUpdateSchema),
       this.categoryController.update
     );
 
     this.appModule.delete(
-      "/",
+      "/:id",
       authorizationMiddleware.use(ROLE.ADMIN),
       this.categoryController.delete
     );
