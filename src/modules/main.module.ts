@@ -13,6 +13,7 @@ import { CategoryModule } from "./category/category.module";
 import { ProductModule } from "./product/product.module";
 import { OrderModule } from "./order/order.module";
 import { CartModule } from "./cart/cart.module";
+import { FileModule } from "./file/file.module";
 
 export class MainModule extends BaseModule {
   constructor(app: Hono<TBlankEnv, BlankSchema, "/">) {
@@ -45,6 +46,7 @@ export class MainModule extends BaseModule {
     new ProductModule(this.app).addRoute();
     new OrderModule(this.app).addRoute();
     new CartModule(this.app).addRoute();
+    new FileModule(this.app).addRoute();
   }
 
   errorHandler() {

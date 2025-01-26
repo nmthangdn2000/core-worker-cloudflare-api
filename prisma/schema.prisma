@@ -28,6 +28,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   Cart      Cart[]
+  File      File[]
 }
 
 model Category {
@@ -56,6 +57,7 @@ model Product {
   updatedAt      DateTime            @updatedAt
   OrderItem      OrderItem[]
   Cart           Cart[]
+  VariantLabel   VariantLabel[]
 }
 
 model ProductOnCategory {
@@ -102,4 +104,40 @@ model Cart {
   quantity  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model File {
+  id            String          @id @default(uuid())
+  name          String
+  url           String
+  type          String
+  size          Int
+  userId        String
+  user          User            @relation(fields: [userId], references: [id]) // Quan hệ n-1 với bảng User
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  VariantOption VariantOption[]
+}
+
+model VariantLabel {
+  id            String          @id @default(uuid())
+  name          String
+  product       Product         @relation(fields: [productId], references: [id])
+  productId     String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  VariantOption VariantOption[]
+}
+
+model VariantOption {
+  id             String       @id @default(uuid())
+  name           String
+  variantLabel   VariantLabel @relation(fields: [variantLabelId], references: [id])
+  variantLabelId String
+  file           File         @relation(fields: [fileId], references: [id])
+  fileId         String
+  quantity       Int
+  price          Float
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
