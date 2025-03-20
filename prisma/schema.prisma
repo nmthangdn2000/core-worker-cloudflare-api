@@ -60,6 +60,7 @@ model Product {
   OrderItem      OrderItem[]
   Cart           Cart[]
   VariantLabel   VariantLabel[]
+  ProductImage   ProductImage[]
 }
 
 model ProductOnCategory {
@@ -119,14 +120,24 @@ model File {
   user          User            @relation(fields: [userId], references: [id]) // Quan hệ n-1 với bảng User
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  VariantOption VariantOption[]
+  variantOption VariantOption[]
+  ProductImage  ProductImage[]
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  fileId    String
+  file      File    @relation(fields: [fileId], references: [id])
+  sortOrder Int // Thứ tự hiển thị
 }
 
 model VariantLabel {
   id            String          @id @default(uuid())
-  name          String
-  product       Product         @relation(fields: [productId], references: [id])
+  name          String // Tên của nhóm thuộc tính (ví dụ: Màu sắc, Kích cỡ)
   productId     String
+  product       Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   VariantOption VariantOption[]
@@ -134,13 +145,14 @@ model VariantLabel {
 
 model VariantOption {
   id             String       @id @default(uuid())
-  name           String
-  variantLabel   VariantLabel @relation(fields: [variantLabelId], references: [id])
+  name           String // Tên option cụ thể (ví dụ: Đỏ, Xanh, Size M)
   variantLabelId String
-  file           File         @relation(fields: [fileId], references: [id])
+  variantLabel   VariantLabel @relation(fields: [variantLabelId], references: [id], onDelete: Cascade)
   fileId         String
-  quantity       Int
-  price          Float
+  file           File         @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  quantity       Int // ✅ Đây là stock cho từng option
+  price          Float // ✅ Giá riêng cho từng option
+  discount       Float?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }

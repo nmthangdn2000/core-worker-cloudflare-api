@@ -1,11 +1,17 @@
 import { z } from "zod";
 
-const specifications = z.object({
-  color: z.string(),
-  size: z.string(),
-  weight: z.number(),
-  material: z.string(),
-  warranty: z.string(),
+
+export const variantOptionSchema = z.object({
+  name: z.string(), // tên option (Đỏ, Xanh,...)
+  fileId: z.string().uuid(), // file hình ảnh
+  quantity: z.number(), // số lượng riêng của option
+  price: z.number(), // giá riêng của option
+  discount: z.number().optional(), // discount riêng option (nếu có)
+});
+
+export const variantLabelSchema = z.object({
+  name: z.string(), // Tên group thuộc tính (Màu sắc, Kích cỡ,...)
+  variantOptions: z.array(variantOptionSchema),
 });
 
 export const productCreateSchema = z.object({
@@ -13,12 +19,12 @@ export const productCreateSchema = z.object({
   sku: z.string().nullable().optional(),
   keywords: z.string(),
   description: z.string(),
-  specifications: z.any().optional(),
   price: z.number(),
   discount: z.number().optional(),
   images: z.array(z.string()),
   categoryIds: z.array(z.string().uuid()),
   stock: z.number(),
+  variantLabels: z.array(variantLabelSchema).optional(),
 });
 
 export type TProductCreateSchema = z.infer<typeof productCreateSchema>;
