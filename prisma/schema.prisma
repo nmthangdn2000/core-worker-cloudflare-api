@@ -59,8 +59,8 @@ model Product {
   updatedAt      DateTime            @updatedAt
   OrderItem      OrderItem[]
   Cart           Cart[]
-  VariantLabel   VariantLabel[]
-  ProductImage   ProductImage[]
+  variantLabels  VariantLabel[]
+  productImages  ProductImage[]
 }
 
 model ProductOnCategory {
@@ -111,17 +111,17 @@ model Cart {
 }
 
 model File {
-  id            String          @id @default(uuid())
-  name          String
-  url           String
-  type          String
-  size          Int
-  userId        String
-  user          User            @relation(fields: [userId], references: [id]) // Quan hệ n-1 với bảng User
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  variantOption VariantOption[]
-  ProductImage  ProductImage[]
+  id             String          @id @default(uuid())
+  name           String
+  url            String
+  type           String
+  size           Int
+  userId         String
+  user           User            @relation(fields: [userId], references: [id]) // Quan hệ n-1 với bảng User
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  variantOptions VariantOption[]
+  productImages  ProductImage[]
 }
 
 model ProductImage {
@@ -134,13 +134,13 @@ model ProductImage {
 }
 
 model VariantLabel {
-  id            String          @id @default(uuid())
-  name          String // Tên của nhóm thuộc tính (ví dụ: Màu sắc, Kích cỡ)
-  productId     String
-  product       Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  VariantOption VariantOption[]
+  id             String          @id @default(uuid())
+  name           String // Tên của nhóm thuộc tính (ví dụ: Màu sắc, Kích cỡ)
+  productId      String
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  variantOptions VariantOption[]
 }
 
 model VariantOption {

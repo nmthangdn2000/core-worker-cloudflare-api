@@ -61,25 +61,24 @@ class ProductService {
             },
           },
         },
-        VariantLabel: {
+        variantLabels: {
           include: {
             variantOptions: {
               include: {
-                file: true, 
+                file: true,
               },
             },
           },
         },
       },
     });
-  
+
     if (!product) {
       throw new BadRequestException(ERROR_MESSAGES.ProductNotFound);
     }
-  
+
     return this.formatProduct(product);
   }
-  
 
   async getAll(query: TProductFilterSchema) {
     const where: Prisma.ProductWhereInput = {};
@@ -164,18 +163,20 @@ class ProductService {
 
   async create(input: TProductCreateSchema) {
     const { categoryIds, variantLabels, images, ...rest } = input;
-  
+
     // 1. Tạo product
     const product = await prismaClient().product.create({
       data: {
         ...rest,
         slug: stringToSlug(rest.name),
         status: STATUS_PRODUCT.IN_STOCK,
-        specifications: rest.description ? JSON.stringify(rest.description) : undefined,
+        specifications: rest.description
+          ? JSON.stringify(rest.description)
+          : undefined,
         images: images.join(","),
       },
     });
-  
+
     // 2. Gán category
     if (categoryIds?.length) {
       await prismaClient().productOnCategory.createMany({
@@ -185,7 +186,7 @@ class ProductService {
         })),
       });
     }
-  
+
     // 3. Tạo VariantLabel và VariantOption nếu có
     if (variantLabels && variantLabels.length > 0) {
       for (const label of variantLabels) {
@@ -195,7 +196,7 @@ class ProductService {
             productId: product.id,
           },
         });
-  
+
         if (label.variantOptions?.length > 0) {
           await prismaClient().variantOption.createMany({
             data: label.variantOptions.map((option) => ({
@@ -210,7 +211,7 @@ class ProductService {
         }
       }
     }
-  
+
     // 4. Lấy lại product kèm quan hệ
     return prismaClient().product.findUnique({
       where: { id: product.id },
@@ -218,7 +219,7 @@ class ProductService {
         categories: {
           include: { category: true },
         },
-        VariantLabel: {
+        variantLabels: {
           include: {
             variantOptions: true,
           },
@@ -226,36 +227,35 @@ class ProductService {
       },
     });
   }
-  
-  
 
   async update(slug: string, input: TProductUpdateSchema) {
     const productExist = await prismaClient().product.findFirst({
       where: { slug },
     });
-  
+
     if (!productExist) {
       throw new BadRequestException(ERROR_MESSAGES.ProductNotFound);
     }
-  
+
     const { categoryIds, variantLabels, images, ...rest } = input;
-  
+
     // Cập nhật product
     const updatedProduct = await prismaClient().product.update({
       where: { id: productExist.id },
       data: {
         ...rest,
-        images: images && images.length > 0 ? images.join(",") : productExist.images,
+        images:
+          images && images.length > 0 ? images.join(",") : productExist.images,
         slug: rest.name ? stringToSlug(rest.name) : productExist.slug,
       },
     });
-  
+
     // Xóa hết category cũ (nếu có categoryIds mới)
     if (categoryIds && categoryIds.length > 0) {
       await prismaClient().productOnCategory.deleteMany({
         where: { productId: productExist.id },
       });
-  
+
       // Gán lại categories mới
       await prismaClient().productOnCategory.createMany({
         data: categoryIds.map((categoryId) => ({
@@ -264,9 +264,9 @@ class ProductService {
         })),
       });
     }
-  
+
     // Nếu muốn xử lý update variantLabels / variantOptions, mình có thể viết thêm đoạn logic ở đây
-  
+
     // Trả về product đã cập nhật kèm quan hệ
     return prismaClient().product.findUnique({
       where: { id: productExist.id },
@@ -274,7 +274,7 @@ class ProductService {
         categories: {
           include: { category: true },
         },
-        VariantLabel: {
+        variantLabels: {
           include: {
             variantOptions: true,
           },
@@ -282,7 +282,6 @@ class ProductService {
       },
     });
   }
-  
 
   async delete(id: string) {
     const productExist = await prismaClient().product.findUnique({

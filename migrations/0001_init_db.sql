@@ -105,6 +105,16 @@ CREATE TABLE "File" (
 );
 
 -- CreateTable
+CREATE TABLE "ProductImage" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "productId" TEXT NOT NULL,
+    "fileId" TEXT NOT NULL,
+    "sortOrder" INTEGER NOT NULL,
+    CONSTRAINT "ProductImage_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "ProductImage_fileId_fkey" FOREIGN KEY ("fileId") REFERENCES "File" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
 CREATE TABLE "VariantLabel" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
@@ -122,6 +132,7 @@ CREATE TABLE "VariantOption" (
     "fileId" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL,
     "price" REAL NOT NULL,
+    "discount" REAL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     CONSTRAINT "VariantOption_variantLabelId_fkey" FOREIGN KEY ("variantLabelId") REFERENCES "VariantLabel" ("id") ON DELETE CASCADE ON UPDATE CASCADE,

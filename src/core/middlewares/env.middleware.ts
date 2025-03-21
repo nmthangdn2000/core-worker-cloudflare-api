@@ -1,37 +1,20 @@
 import { Next } from "hono";
-import { TContext } from "../types/type";
+import type { TContext } from "../types/type";
 
-class EnvMiddleware {
-  private static instance: EnvMiddleware;
-  private env: CloudflareBindings = {} as CloudflareBindings;
+let currentEnv: CloudflareBindings | null = null;
 
-  private constructor() {
-    // this.setContext = this.setContext.bind(this);
+export const setContext = (c: TContext, next: Next) => {
+  currentEnv = c.env;
+  return next();
+};
+
+export const getEnv = <T extends keyof CloudflareBindings>(
+  key: T
+): CloudflareBindings[T] => {
+  if (!currentEnv) {
+    throw new Error(
+      "Environment not initialized. Make sure to use setContext first."
+    );
   }
-
-  public static getInstance(): EnvMiddleware {
-    if (!EnvMiddleware.instance) {
-      EnvMiddleware.instance = new EnvMiddleware();
-    }
-
-    return EnvMiddleware.instance;
-  }
-
-  setContext(c: TContext, next: Next) {
-    this.env = { ...c.env };
-
-    return next();
-  }
-
-  getEnv<T extends keyof CloudflareBindings>(key: T): CloudflareBindings[T] {
-    // Giả sử bạn có cách lấy giá trị từ CloudflareBindings
-
-    return this.env[key];
-  }
-}
-export const setContext = EnvMiddleware.getInstance().setContext.bind(
-  EnvMiddleware.getInstance()
-);
-export const getEnv = EnvMiddleware.getInstance().getEnv.bind(
-  EnvMiddleware.getInstance()
-);
+  return currentEnv[key];
+};

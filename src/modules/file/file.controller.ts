@@ -4,11 +4,13 @@ import { transformInterceptor } from "../../core/interceptors/transform.intercep
 
 export class FileController {
   async upload(c: TContext) {
+    const userAuth = c.get("userAuth");
+
     const files = (await c.req.parseBody({ all: true }))[
       "files"
     ] as any as File[];
 
-    const data = await fileService.upload(files);
+    const data = await fileService.upload(files, userAuth);
     return transformInterceptor(c, data);
   }
 
