@@ -1,12 +1,13 @@
 import { z } from "zod";
+import { TVariant } from "../product.type";
 
+export const productImageSchema = z.object({
+  fileId: z.string().uuid(),
+  sortOrder: z.number(),
+});
 
 export const variantOptionSchema = z.object({
-  name: z.string(), // tên option (Đỏ, Xanh,...)
-  fileId: z.string().uuid(), // file hình ảnh
-  quantity: z.number(), // số lượng riêng của option
-  price: z.number(), // giá riêng của option
-  discount: z.number().optional(), // discount riêng option (nếu có)
+  name: z.string(), // Tên option (Đỏ, Xanh,...)
 });
 
 export const variantLabelSchema = z.object({
@@ -14,17 +15,30 @@ export const variantLabelSchema = z.object({
   variantOptions: z.array(variantOptionSchema),
 });
 
+export const variantSchema: z.ZodType<TVariant> = z.lazy(() =>
+  z.object({
+    variantOption: z.string(),
+    children: z.array(variantSchema).optional(),
+    price: z.number().min(0, "Giá không hợp lệ").optional(),
+    discount: z.number().min(0).max(100).optional(),
+    stock: z.number().int().min(0, "Số lượng không hợp lệ").optional(),
+    fileId: z.string().uuid().optional(),
+  })
+);
+
 export const productCreateSchema = z.object({
   name: z.string(),
   sku: z.string().nullable().optional(),
   keywords: z.string(),
-  description: z.string(),
+  description: z.string().nullable().optional(),
   price: z.number(),
   discount: z.number().optional(),
-  images: z.array(z.string()),
-  categoryIds: z.array(z.string().uuid()),
+  categoryIds: z.array(z.string().uuid()), // nếu backend nhận qua Id
   stock: z.number(),
-  variantLabels: z.array(variantLabelSchema).optional(),
+  productImages: z.array(productImageSchema).optional(),
+  variants: z.array(variantLabelSchema).optional(),
+  variantGroup: z.array(variantSchema).optional(),
+  status: z.string(), // ✅ bổ sung field status
 });
 
 export type TProductCreateSchema = z.infer<typeof productCreateSchema>;

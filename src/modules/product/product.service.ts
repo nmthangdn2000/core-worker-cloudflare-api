@@ -38,7 +38,6 @@ class ProductService {
         id: product!.id,
         name: product!.name,
         slug: product!.slug,
-        image: product!.images.split(","),
         totalQuantity: item._sum.quantity,
       };
     });
@@ -61,11 +60,16 @@ class ProductService {
             },
           },
         },
-        variantLabels: {
-          include: {
-            variantOptions: {
-              include: {
-                file: true,
+        productImages: {
+          select: {
+            fileId: true,
+            sortOrder: true,
+            file: {
+              select: {
+                id: true,
+                url: true,
+                type: true,
+                size: true,
               },
             },
           },
@@ -143,6 +147,20 @@ class ProductService {
               },
             },
           },
+          productImages: {
+            select: {
+              fileId: true,
+              sortOrder: true,
+              file: {
+                select: {
+                  id: true,
+                  url: true,
+                  type: true,
+                  size: true,
+                },
+              },
+            },
+          },
         },
         skip: (query.page - 1) * query.take,
         take: query.take,
@@ -162,125 +180,129 @@ class ProductService {
   }
 
   async create(input: TProductCreateSchema) {
-    const { categoryIds, variantLabels, images, ...rest } = input;
+    const productExist = await prismaClient().product.findFirst({
+      where: { slug: stringToSlug(input.name) },
+    });
 
-    // 1. Tạo product
+    if (productExist) {
+      throw new BadRequestException(ERROR_MESSAGES.ProductExist);
+    }
+
+    // 2. Tạo Product
     const product = await prismaClient().product.create({
       data: {
-        ...rest,
-        slug: stringToSlug(rest.name),
-        status: STATUS_PRODUCT.IN_STOCK,
-        specifications: rest.description
-          ? JSON.stringify(rest.description)
-          : undefined,
-        images: images.join(","),
+        name: input.name,
+        slug: stringToSlug(input.name),
+        sku: input.sku ?? null,
+        keywords: input.keywords,
+        description: input.description,
+        price: input.price,
+        discount: input.discount ?? 0,
+        stock: input.stock,
+        status: input.status || STATUS_PRODUCT.DRAFT,
+        variants: input.variants ? JSON.stringify(input.variants) : null,
+        variantGroup: input.variantGroup
+          ? JSON.stringify(input.variantGroup)
+          : null,
       },
     });
 
-    // 2. Gán category
-    if (categoryIds?.length) {
-      await prismaClient().productOnCategory.createMany({
-        data: categoryIds.map((categoryId) => ({
-          categoryId,
-          productId: product.id,
-        })),
-      });
+    // 3. Gán hình ảnh
+    if (input.productImages && input.productImages.length > 0) {
+      await Promise.all(
+        input.productImages.map((productImage, index) =>
+          prismaClient().productImage.create({
+            data: {
+              productId: product.id,
+              fileId: productImage.fileId,
+              sortOrder: productImage.sortOrder ?? index,
+            },
+          })
+        )
+      );
     }
 
-    // 3. Tạo VariantLabel và VariantOption nếu có
-    if (variantLabels && variantLabels.length > 0) {
-      for (const label of variantLabels) {
-        const createdLabel = await prismaClient().variantLabel.create({
+    // 4. Gán categories
+    await Promise.all(
+      input.categoryIds.map((categoryId) =>
+        prismaClient().productOnCategory.create({
           data: {
-            name: label.name,
             productId: product.id,
+            categoryId,
           },
-        });
+        })
+      )
+    );
 
-        if (label.variantOptions?.length > 0) {
-          await prismaClient().variantOption.createMany({
-            data: label.variantOptions.map((option) => ({
-              name: option.name,
-              variantLabelId: createdLabel.id,
-              fileId: option.fileId,
-              quantity: option.quantity,
-              price: option.price,
-              discount: option.discount ?? 0,
-            })),
-          });
-        }
-      }
-    }
-
-    // 4. Lấy lại product kèm quan hệ
-    return prismaClient().product.findUnique({
-      where: { id: product.id },
-      include: {
-        categories: {
-          include: { category: true },
-        },
-        variantLabels: {
-          include: {
-            variantOptions: true,
-          },
-        },
-      },
-    });
+    return this.getOne(product.slug);
   }
 
   async update(slug: string, input: TProductUpdateSchema) {
     const productExist = await prismaClient().product.findFirst({
       where: { slug },
+      include: {
+        categories: true,
+      },
     });
 
     if (!productExist) {
       throw new BadRequestException(ERROR_MESSAGES.ProductNotFound);
     }
 
-    const { categoryIds, variantLabels, images, ...rest } = input;
-
-    // Cập nhật product
-    const updatedProduct = await prismaClient().product.update({
+    // 2. Update product chính
+    const product = await prismaClient().product.update({
       where: { id: productExist.id },
       data: {
-        ...rest,
-        images:
-          images && images.length > 0 ? images.join(",") : productExist.images,
-        slug: rest.name ? stringToSlug(rest.name) : productExist.slug,
+        name: input.name,
+        slug: stringToSlug(input.name),
+        sku: input.sku ?? null,
+        keywords: input.keywords,
+        description: input.description,
+        price: input.price,
+        discount: input.discount ?? 0,
+        stock: input.stock,
+        status: input.status || STATUS_PRODUCT.DRAFT,
+        variants: input.variants ? JSON.stringify(input.variants) : null,
+        variantGroup: input.variantGroup
+          ? JSON.stringify(input.variantGroup)
+          : null,
       },
     });
 
-    // Xóa hết category cũ (nếu có categoryIds mới)
-    if (categoryIds && categoryIds.length > 0) {
-      await prismaClient().productOnCategory.deleteMany({
-        where: { productId: productExist.id },
-      });
-
-      // Gán lại categories mới
-      await prismaClient().productOnCategory.createMany({
-        data: categoryIds.map((categoryId) => ({
-          categoryId,
-          productId: productExist.id,
-        })),
-      });
+    // 3. Xoá và thêm lại hình ảnh productIma
+    await prismaClient().productImage.deleteMany({
+      where: { productId: product.id },
+    });
+    if (input.productImages && input.productImages.length > 0) {
+      await Promise.all(
+        input.productImages.map((productImage, index) =>
+          prismaClient().productImage.create({
+            data: {
+              productId: product.id,
+              fileId: productImage.fileId,
+              sortOrder: productImage.sortOrder ?? index,
+            },
+          })
+        )
+      );
     }
 
-    // Nếu muốn xử lý update variantLabels / variantOptions, mình có thể viết thêm đoạn logic ở đây
-
-    // Trả về product đã cập nhật kèm quan hệ
-    return prismaClient().product.findUnique({
-      where: { id: productExist.id },
-      include: {
-        categories: {
-          include: { category: true },
-        },
-        variantLabels: {
-          include: {
-            variantOptions: true,
-          },
-        },
-      },
+    // 4. Xoá và thêm lại categories
+    await prismaClient().productOnCategory.deleteMany({
+      where: { productId: product.id },
     });
+    await Promise.all(
+      input.categoryIds.map((categoryId) =>
+        prismaClient().productOnCategory.create({
+          data: {
+            productId: product.id,
+            categoryId,
+          },
+        })
+      )
+    );
+
+    return this.getOne(product.slug);
   }
 
   async delete(id: string) {
@@ -308,9 +330,14 @@ class ProductService {
   private formatProduct(product: Prisma.ProductGetPayload<any>) {
     return {
       ...product,
-      specifications: JSON.parse(product.specifications || "[]"),
-      images: product.images.split(","),
+      variants: product.variants ? JSON.parse(product.variants) : [],
+      variantGroup: product.variantGroup
+        ? JSON.parse(product.variantGroup)
+        : [],
       categories: (product as any).categories.map((item: any) => item.category),
+      productImages: (product as any).productImages
+        ?.sort((a: any, b: any) => a.sortOrder - b.sortOrder)
+        .map((item: any) => item.file),
     };
   }
 }

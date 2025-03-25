@@ -15,6 +15,7 @@ export enum ERROR_MESSAGES {
 
   // 1031 - 1040: Product
   ProductNotFound = 1031,
+  ProductExist = 1032,
 
   // 1041 - 1050: Order
   OrderNotFound = 1041,

@@ -15,9 +15,15 @@ export const validatorMiddleware =
         : targets === "query"
         ? qs.parse(c.req.query())
         : c.req.param()
-    );
+    ) as {
+      success: boolean;
+      data: any;
+      error: any;
+    };
 
     if (!success) {
+      console.log(error.formErrors);
+
       throw new ValidatorException(error.formErrors.fieldErrors);
     }
 

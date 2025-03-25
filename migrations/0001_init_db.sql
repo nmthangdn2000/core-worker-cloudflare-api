@@ -31,12 +31,12 @@ CREATE TABLE "Product" (
     "sku" TEXT,
     "keywords" TEXT NOT NULL,
     "description" TEXT,
-    "specifications" TEXT,
     "price" REAL NOT NULL,
     "discount" REAL NOT NULL DEFAULT 0,
-    "images" TEXT NOT NULL,
     "stock" INTEGER NOT NULL DEFAULT 0,
     "status" TEXT NOT NULL,
+    "variants" TEXT,
+    "variantGroup" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
@@ -120,8 +120,7 @@ CREATE TABLE "VariantLabel" (
     "name" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "VariantLabel_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "updatedAt" DATETIME NOT NULL
 );
 
 -- CreateTable
@@ -129,14 +128,9 @@ CREATE TABLE "VariantOption" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
     "variantLabelId" TEXT NOT NULL,
-    "fileId" TEXT NOT NULL,
-    "quantity" INTEGER NOT NULL,
-    "price" REAL NOT NULL,
-    "discount" REAL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "VariantOption_variantLabelId_fkey" FOREIGN KEY ("variantLabelId") REFERENCES "VariantLabel" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "VariantOption_fileId_fkey" FOREIGN KEY ("fileId") REFERENCES "File" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "VariantOption_variantLabelId_fkey" FOREIGN KEY ("variantLabelId") REFERENCES "VariantLabel" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateIndex

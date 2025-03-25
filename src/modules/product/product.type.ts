@@ -1,3 +1,12 @@
+export type TVariant = {
+  variantOption: string;
+  children?: TVariant[];
+  price?: number;
+  discount?: number;
+  stock?: number;
+  fileIds?: string;
+};
+
 export enum SORT_KEY_PRODUCT {
   NAME = "name",
   PRICE = "price",
@@ -5,6 +14,6 @@ export enum SORT_KEY_PRODUCT {
 }
 
 export enum STATUS_PRODUCT {
-  IN_STOCK = "in_stock",
-  OUT_OF_STOCK = "out_of_stock",
+  DRAFT = "draft",
+  PUBLISHED = "published",
 }
